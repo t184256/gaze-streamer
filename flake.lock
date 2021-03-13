@@ -1,0 +1,62 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1615583000,
+        "narHash": "sha256-ysd3ntUs8qeVuYdmp2Y5J992NVdoKji9i92StU3IJ7M=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "60b18a066e8ce5dd21ebff5324345d3586a67ad9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "release-20.09",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1615583000,
+        "narHash": "sha256-ysd3ntUs8qeVuYdmp2Y5J992NVdoKji9i92StU3IJ7M=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "60b18a066e8ce5dd21ebff5324345d3586a67ad9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "release-20.09",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "tobii": "tobii"
+      }
+    },
+    "tobii": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1615670216,
+        "narHash": "sha256-WN3+g5yZfpT5a+ceVHcjk+6VqVAQnS/EBsI2zJxJTrE=",
+        "owner": "t184256",
+        "repo": "tobii_eye_tracker_linux_installer",
+        "rev": "609c418f85466c2c4920906100472ca0327afde6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "t184256",
+        "repo": "tobii_eye_tracker_linux_installer",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
