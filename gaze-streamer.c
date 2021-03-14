@@ -3,6 +3,8 @@
 #include <tobii/tobii.h>
 #include <tobii/tobii_streams.h>
 #include <math.h>
+#include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +19,7 @@ void get_first_url(char const *received_url, void *_) {
 
 char* url = first_url;
 int sock;
+bool done = 0;
 
 void gaze_report(float x, float y) {
 	int l;
@@ -31,6 +34,10 @@ void gaze_point_callback(tobii_gaze_point_t const *gaze_pt, void *_) {
 		gaze_report(gaze_pt->position_xy[0], gaze_pt->position_xy[1]);
 	else
 		gaze_report(NAN, NAN);
+}
+
+void wrap_up(int signum) {
+	done = 1;
 }
 
 int main(int argc, char** argv) {
@@ -56,7 +63,11 @@ int main(int argc, char** argv) {
 		check(tobii_enumerate_local_device_urls(api, get_first_url, 0));
 	check(tobii_device_create(api, url, &device));
 	check(tobii_gaze_point_subscribe(device, gaze_point_callback, 0));
-	while (1) {
+
+	signal(SIGINT, wrap_up);
+	signal(SIGTERM, wrap_up);
+
+	while (!done) {
 		do {
 			error = tobii_wait_for_callbacks(1, &device);
 			if (error == TOBII_ERROR_TIMED_OUT)
@@ -65,4 +76,11 @@ int main(int argc, char** argv) {
 		check(error);
 		check(tobii_device_process_callbacks(device));
 	}
+	fprintf(stderr, "Exiting...\n");
+	gaze_report(NAN, NAN);
+
+	check(tobii_gaze_point_unsubscribe(device));
+	check(tobii_device_destroy(device));
+	check(tobii_api_destroy(api));
+	return 0;
 }
