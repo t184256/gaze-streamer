@@ -2,6 +2,7 @@
 #include <netdb.h>
 #include <tobii/tobii.h>
 #include <tobii/tobii_streams.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,15 +18,19 @@ void get_first_url(char const *received_url, void *_) {
 char* url = first_url;
 int sock;
 
-void gaze_point_callback(tobii_gaze_point_t const *gaze_point, void *_) {
-	if (gaze_point->validity != TOBII_VALIDITY_VALID)
-		return;
+void gaze_report(float x, float y) {
 	int l;
 	char message[128];
-	l = snprintf(message, 128, "%s gaze: %+.20f %+.020f\n", url,
-		     gaze_point->position_xy[0], gaze_point->position_xy[1]);
+	l = snprintf(message, 128, "%s gaze: %+.20f %+.020f\n", url, x, y);
 	fputs(message, stdout);
 	send(sock, message, strlen(message), 0);
+}
+
+void gaze_point_callback(tobii_gaze_point_t const *gaze_pt, void *_) {
+	if (gaze_pt->validity == TOBII_VALIDITY_VALID)
+		gaze_report(gaze_pt->position_xy[0], gaze_pt->position_xy[1]);
+	else
+		gaze_report(NAN, NAN);
 }
 
 int main(int argc, char** argv) {
@@ -54,6 +59,8 @@ int main(int argc, char** argv) {
 	while (1) {
 		do {
 			error = tobii_wait_for_callbacks(1, &device);
+			if (error == TOBII_ERROR_TIMED_OUT)
+				gaze_report(NAN, NAN);
 		} while (error == TOBII_ERROR_TIMED_OUT);
 		check(error);
 		check(tobii_device_process_callbacks(device));
