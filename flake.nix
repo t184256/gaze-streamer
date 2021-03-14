@@ -8,14 +8,14 @@
 
   outputs = { self, nixpkgs, tobii }: {
     packages.x86_64-linux = with import nixpkgs { system = "x86_64-linux"; }; {
-      gaze-streamer = stdenv.mkDerivation {
+      dual-gaze-streamer = stdenv.mkDerivation {
         name = "tobii-example";
         version = "1";
         src = self;
         nativeBuildInputs = [ tobii.packages.x86_64-linux.tobii-library ];
         installPhase = ''
           mkdir -p $out/bin
-          cp gaze-streamer $out/bin/
+          cp dual-gaze-streamer $out/bin/
         '';
       };
 
@@ -26,6 +26,6 @@
         };
     };
 
-    defaultPackage.x86_64-linux = self.packages.x86_64-linux.gaze-streamer;
+    defaultPackage.x86_64-linux = self.packages.x86_64-linux.dual-gaze-streamer;
   };
 }
