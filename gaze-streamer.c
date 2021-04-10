@@ -16,24 +16,28 @@ char first_url[128];
 void get_first_url(char const *received_url, void *_) {
 	strcpy(first_url, received_url);
 }
+uint64_t prev_ts = 0;
 
 char* url = first_url;
 int sock;
 bool done = 0;
 
-void gaze_report(float x, float y) {
+void gaze_report(uint64_t timestamp_us, float x, float y) {
 	int l;
 	char message[128];
+	printf("%+5ld %+.20f %+.020f\n", timestamp_us - prev_ts, x, y);
+	prev_ts = timestamp_us;
 	l = snprintf(message, 128, "%s gaze: %+.20f %+.020f\n", url, x, y);
-	fputs(message, stdout);
+	//fputs(message, stdout);
 	send(sock, message, strlen(message), 0);
 }
 
 void gaze_point_callback(tobii_gaze_point_t const *gaze_pt, void *_) {
 	if (gaze_pt->validity == TOBII_VALIDITY_VALID)
-		gaze_report(gaze_pt->position_xy[0], gaze_pt->position_xy[1]);
+		gaze_report(gaze_pt->timestamp_us,
+			    gaze_pt->position_xy[0], gaze_pt->position_xy[1]);
 	else
-		gaze_report(NAN, NAN);
+		gaze_report(gaze_pt->timestamp_us, NAN, NAN);
 }
 
 void wrap_up(int signum) {
@@ -71,13 +75,13 @@ int main(int argc, char** argv) {
 		do {
 			error = tobii_wait_for_callbacks(1, &device);
 			if (error == TOBII_ERROR_TIMED_OUT)
-				gaze_report(NAN, NAN);
+				gaze_report(0, NAN, NAN);
 		} while (error == TOBII_ERROR_TIMED_OUT);
 		check(error);
 		check(tobii_device_process_callbacks(device));
 	}
 	fprintf(stderr, "Exiting...\n");
-	gaze_report(NAN, NAN);
+	gaze_report(0, NAN, NAN);
 
 	check(tobii_gaze_point_unsubscribe(device));
 	check(tobii_device_destroy(device));
